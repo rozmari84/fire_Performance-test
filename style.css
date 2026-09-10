@@ -1,0 +1,233 @@
+:root {
+  --red: #b5342a;
+  --red-dark: #8e2a22;
+  --bg: #f6f4f0;
+  --card-bg: #ffffff;
+  --border: #e0dcd4;
+  --text: #2b2622;
+  --muted: #8a8378;
+  --ok: #2f8f5b;
+  --ng: #c94a3c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  line-height: 1.6;
+}
+
+#app {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 16px 16px 100px;
+}
+
+.topbar h1 {
+  font-size: 1.3rem;
+  margin: 8px 0 12px;
+  color: var(--red-dark);
+}
+
+.topbar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.topbar-controls label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.topbar-controls select {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: white;
+  font-size: 0.9rem;
+}
+
+.ghost-btn {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+.ghost-btn:hover { background: #eee; }
+
+.stats-bar {
+  display: flex;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+.stats-bar b { color: var(--text); }
+
+.question-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.q-number {
+  display: inline-block;
+  background: var(--red);
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  padding: 3px 10px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.q-text {
+  white-space: pre-line;
+  margin-bottom: 14px;
+  font-size: 1rem;
+}
+
+.q-image {
+  max-width: 100%;
+  display: block;
+  margin: 10px 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.part-row {
+  margin-bottom: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+.part-row:first-of-type { border-top: none; padding-top: 0; }
+
+.part-label {
+  font-weight: 600;
+  color: var(--red-dark);
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+.part-input {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.answer-box {
+  display: none;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #fbf6ee;
+  border: 1px solid #ecd9b8;
+  border-radius: 8px;
+  font-size: 0.92rem;
+}
+.answer-box.show { display: block; }
+.answer-box .ans-label { color: var(--muted); font-size: 0.78rem; margin-bottom: 2px; }
+
+.grade-btns {
+  display: none;
+  gap: 8px;
+  margin-top: 6px;
+}
+.grade-btns.show { display: flex; }
+
+.grade-btn {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background: white;
+}
+.grade-btn.o.active { background: var(--ok); color: white; border-color: var(--ok); }
+.grade-btn.x.active { background: var(--ng); color: white; border-color: var(--ng); }
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.primary-btn {
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.primary-btn:hover { background: var(--red-dark); }
+
+.secondary-btn {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.nav-bar button {
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.nav-bar button:disabled {
+  background: #ccc;
+  cursor: default;
+}
+
+#progressLabel {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
