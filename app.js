@@ -138,7 +138,10 @@ function render() {
   const card = document.createElement("div");
   card.className = "question-card";
 
-  const imageHtml = q.image ? `<img class="q-image" src="${q.image}" alt="문제 ${q.id} 그림">` : "";
+  const imageList = q.images ? q.images : (q.image ? [q.image] : []);
+  const imageHtml = imageList
+    .map((src) => `<img class="q-image" src="${src}" alt="문제 ${q.id} 그림">`)
+    .join("");
 
   const partsHtml = q.parts
     .map((part, idx) => {
