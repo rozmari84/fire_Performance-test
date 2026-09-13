@@ -71,7 +71,17 @@ async function init() {
 
 async function loadYearsForCategory() {
   const res = await fetch(`data/${currentCategory.yearsFile}`);
-  allYears = await res.json();
+  const rawYears = await res.json();
+  // 항목이 그냥 문자열("2025")이면 4자리 숫자일 때만 "년"을 붙이고,
+  // 그 외(예: "경계구역 계산" 같은 주제명)는 그대로 라벨로 쓴다.
+  // {id, label} 형태의 객체도 지원한다.
+  allYears = rawYears.map((y) => {
+    if (typeof y === "string") {
+      const label = /^\d{4}$/.test(y) ? `${y}년` : y;
+      return { id: y, label };
+    }
+    return y;
+  });
 
   if (!allYears.length) {
     yearSelect.innerHTML = "";
@@ -83,9 +93,9 @@ async function loadYearsForCategory() {
   }
 
   yearSelect.innerHTML = allYears
-    .map((y) => `<option value="${y}">${y}년</option>`)
+    .map((y) => `<option value="${y.id}">${y.label}</option>`)
     .join("");
-  currentYear = allYears[0];
+  currentYear = allYears[0].id;
   yearSelect.value = currentYear;
   await loadYear();
 }
