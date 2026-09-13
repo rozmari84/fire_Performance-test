@@ -1,0 +1,4 @@
+[
+  { "id": "gicho", "name": "실기 기출문제", "yearsFile": "years.json", "fileTemplate": "{year}.json" },
+  { "id": "domyeon", "name": "도면 및 가닥수", "yearsFile": "domyeon-years.json", "fileTemplate": "domyeon-{year}.json" }
+]
