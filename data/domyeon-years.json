@@ -1,1 +1,4 @@
-[]
+[
+  { "id": "boundary-zone", "label": "경계구역 계산" },
+  { "id": "cable-count", "label": "가닥수 계산" }
+]
