@@ -2,6 +2,8 @@
 
 const STORAGE_KEY = "fireExamStats_v1";
 
+let categories = [];         // [{id, name, yearsFile, fileTemplate}]
+let currentCategory = null;  // 현재 선택된 카테고리 객체
 let allYears = [];
 let currentYear = null;
 let currentData = null;      // { year, exam, questions: [...] }
@@ -9,6 +11,7 @@ let orderedQuestions = [];   // 현재 모드에 따라 정렬/필터된 문제 
 let currentIndex = 0;
 let stats = loadStats();
 
+const categorySelect = document.getElementById("categorySelect");
 const yearSelect = document.getElementById("yearSelect");
 const modeSelect = document.getElementById("modeSelect");
 const quizArea = document.getElementById("quizArea");
@@ -21,17 +24,21 @@ const resetStatsBtn = document.getElementById("resetStatsBtn");
 init();
 
 async function init() {
-  const res = await fetch("data/years.json");
-  allYears = await res.json();
-  yearSelect.innerHTML = allYears
-    .map((y) => `<option value="${y}">${y}년</option>`)
+  const res = await fetch("data/categories.json");
+  categories = await res.json();
+  categorySelect.innerHTML = categories
+    .map((c) => `<option value="${c.id}">${c.name}</option>`)
     .join("");
-  currentYear = allYears[0];
-  yearSelect.value = currentYear;
+  currentCategory = categories[0];
+  categorySelect.value = currentCategory.id;
 
+  categorySelect.addEventListener("change", async () => {
+    currentCategory = categories.find((c) => c.id === categorySelect.value);
+    await loadYearsForCategory();
+  });
   yearSelect.addEventListener("change", async () => {
     currentYear = yearSelect.value;
-    await loadYear(currentYear);
+    await loadYear();
   });
   modeSelect.addEventListener("change", () => {
     buildOrder();
@@ -51,26 +58,60 @@ async function init() {
     }
   });
   resetStatsBtn.addEventListener("click", () => {
-    if (confirm("이 회차의 채점 기록을 모두 초기화할까요?")) {
-      delete stats[currentYear];
+    if (confirm("이 카테고리·회차의 채점 기록을 모두 초기화할까요?")) {
+      delete stats[statsKey()];
       saveStats();
       render();
       renderStatsBar();
     }
   });
 
-  await loadYear(currentYear);
+  await loadYearsForCategory();
 }
 
-async function loadYear(year) {
-  const res = await fetch(`data/${year}.json`);
+async function loadYearsForCategory() {
+  const res = await fetch(`data/${currentCategory.yearsFile}`);
+  allYears = await res.json();
+
+  if (!allYears.length) {
+    yearSelect.innerHTML = "";
+    currentYear = null;
+    currentData = null;
+    orderedQuestions = [];
+    render();
+    return;
+  }
+
+  yearSelect.innerHTML = allYears
+    .map((y) => `<option value="${y}">${y}년</option>`)
+    .join("");
+  currentYear = allYears[0];
+  yearSelect.value = currentYear;
+  await loadYear();
+}
+
+async function loadYear() {
+  const fileName = currentCategory.fileTemplate.replace("{year}", currentYear);
+  const res = await fetch(`data/${fileName}`);
   currentData = await res.json();
   buildOrder();
   currentIndex = 0;
   render();
 }
 
+// 카테고리별로 채점 기록을 분리하기 위한 저장 키.
+// 기존 "실기 기출문제"(gicho) 카테고리는 연도만으로 저장해와서(과거 기록 유지),
+// 그 외 카테고리는 "카테고리아이디_연도"로 구분한다.
+function statsKey() {
+  if (!currentCategory || !currentYear) return null;
+  return currentCategory.id === "gicho" ? currentYear : `${currentCategory.id}_${currentYear}`;
+}
+
 function buildOrder() {
+  if (!currentData) {
+    orderedQuestions = [];
+    return;
+  }
   const mode = modeSelect.value;
   let qs = currentData.questions.slice();
 
@@ -83,8 +124,9 @@ function buildOrder() {
 }
 
 function questionHasWrong(q) {
-  const yearStats = stats[currentYear] || {};
-  return q.parts.some((p, i) => yearStats[`${q.id}-${i}`] === "X");
+  const key = statsKey();
+  const savedStats = (key && stats[key]) || {};
+  return q.parts.some((p, i) => savedStats[`${q.id}-${i}`] === "X");
 }
 
 function shuffle(arr) {
@@ -109,24 +151,30 @@ function saveStats() {
 }
 
 function setGrade(qId, partIdx, grade) {
-  if (!stats[currentYear]) stats[currentYear] = {};
-  const key = `${qId}-${partIdx}`;
-  if (stats[currentYear][key] === grade) {
-    delete stats[currentYear][key]; // 다시 누르면 취소
+  const key = statsKey();
+  if (!key) return;
+  if (!stats[key]) stats[key] = {};
+  const cellKey = `${qId}-${partIdx}`;
+  if (stats[key][cellKey] === grade) {
+    delete stats[key][cellKey]; // 다시 누르면 취소
   } else {
-    stats[currentYear][key] = grade;
+    stats[key][cellKey] = grade;
   }
   saveStats();
 }
 
 function getGrade(qId, partIdx) {
-  const yearStats = stats[currentYear] || {};
-  return yearStats[`${qId}-${partIdx}`];
+  const key = statsKey();
+  const savedStats = (key && stats[key]) || {};
+  return savedStats[`${qId}-${partIdx}`];
 }
 
 function render() {
-  if (!orderedQuestions.length) {
-    quizArea.innerHTML = `<div class="empty-state">해당 조건의 문제가 없습니다.<br>(틀린 문제 모드는 먼저 채점을 해야 표시됩니다)</div>`;
+  if (!currentYear || !orderedQuestions.length) {
+    const msg = !currentYear
+      ? "아직 이 카테고리에는 등록된 회차가 없습니다."
+      : "해당 조건의 문제가 없습니다.<br>(틀린 문제 모드는 먼저 채점을 해야 표시됩니다)";
+    quizArea.innerHTML = `<div class="empty-state">${msg}</div>`;
     progressLabel.textContent = "";
     prevBtn.disabled = true;
     nextBtn.disabled = true;
@@ -185,7 +233,6 @@ function render() {
       const idx = btn.dataset.idx;
       const grade = btn.dataset.grade;
       setGrade(q.id, idx, grade);
-      // 버튼 활성화 갱신
       const wrap = card.querySelector(`.grade-btns[data-idx="${idx}"]`);
       wrap.querySelectorAll(".grade-btn").forEach((b) => b.classList.remove("active"));
       if (getGrade(q.id, idx) === grade) {
@@ -203,9 +250,10 @@ function render() {
 }
 
 function renderStatsBar() {
-  const yearStats = stats[currentYear] || {};
+  const key = statsKey();
+  const savedStats = (key && stats[key]) || {};
   let total = 0, correct = 0, wrong = 0;
-  Object.values(yearStats).forEach((g) => {
+  Object.values(savedStats).forEach((g) => {
     total++;
     if (g === "O") correct++;
     if (g === "X") wrong++;
