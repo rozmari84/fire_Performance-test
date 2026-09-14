@@ -220,11 +220,19 @@ function render() {
     })
     .join("");
 
+  const answerImageHtml = q.answerImage
+    ? `<div class="answer-box answer-diagram">
+         <div class="ans-label">정답 도면</div>
+         <img class="q-image" src="${q.answerImage}" alt="문제 ${q.id} 정답 도면">
+       </div>`
+    : "";
+
   card.innerHTML = `
     <div class="q-number">문제 ${q.id}</div>
     <div class="q-text">${escapeHtml(q.text)}</div>
     ${imageHtml}
     ${partsHtml}
+    ${answerImageHtml}
     <div class="card-actions">
       <button class="primary-btn" id="checkBtn">정답 확인</button>
     </div>
