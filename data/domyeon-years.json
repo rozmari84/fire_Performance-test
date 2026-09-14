@@ -1,4 +1,5 @@
 [
   { "id": "boundary-zone", "label": "경계구역 계산" },
-  { "id": "cable-count", "label": "가닥수 계산" }
+  { "id": "cable-count", "label": "가닥수 계산" },
+  { "id": "detector-wiring", "label": "감지기 배치 및 배선" }
 ]
